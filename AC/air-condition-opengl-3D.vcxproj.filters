@@ -37,6 +37,12 @@
     <None Include="Shaders\text.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Resources\remote.mtl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\toilet.mtl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\main.cpp">
@@ -60,6 +66,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Resources\Plastic_color.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resources\remote.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resources\toilet.jpg">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

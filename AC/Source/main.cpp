@@ -44,7 +44,7 @@ float waterLevel = 0.0f;
 const float maxWaterLevel = 0.2f;
 const float fillSpeed = 0.02f;
 
-float dropY = 0.0f;
+float dropY = -1.5f;
 bool dropActive = false;
 const float dropSpeed = 2.0f;
 glm::vec3 dropStartPos = glm::vec3(-2.0f, 0.15f, 0.0f);
@@ -52,7 +52,10 @@ glm::vec3 dropStartPos = glm::vec3(-2.0f, 0.15f, 0.0f);
 float basinRadius = 0.3f;
 bool isBasinHovered = false;
 bool isBasinPickedUp = false;
-glm::vec3 basinPos = glm::vec3(-2.0f, -0.8f, 0.0f);
+glm::vec3 basinPos = glm::vec3(-2.0f, -1.5f, 0.0f);
+
+bool depthTestEnabled = true;
+bool faceCullingEnabled = false;
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
@@ -135,7 +138,7 @@ void processInput(GLFWwindow* window) {
         }
         dropY -= dropSpeed * deltaTime;
 
-        if (dropY < -0.8f) {
+        if (dropY < -1.6f) {
             dropActive = false;
         }
     }
@@ -178,7 +181,7 @@ void processInput(GLFWwindow* window) {
         cameraPos += direction * currentSpeed * deltaTime;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS/* && isGrounded*/ && !isBasinPickedUp) {
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS /*&& isGrounded*/ && !isBasinPickedUp) {
         verticalVelocity = jumpForce;
         isGrounded = false;
     }
@@ -206,7 +209,7 @@ void processInput(GLFWwindow* window) {
             }
         } else {
             if (angleCos > 0.99f && glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-                basinPos = glm::vec3(-2.0f, -0.8f, 0.0f);
+                basinPos = glm::vec3(-2.0f, -1.5f, 0.0f);
                 isBasinPickedUp = false;
             }
         }
@@ -270,6 +273,9 @@ void drawCuboid(Shader unifiedShader, unsigned int VAOcuboid, bool јелПре�
     unifiedShader.setVec3("uMaterial.kS", 0.72811f, 0.626959f, 0.626959f);
     unifiedShader.setFloat("uMaterial.shine", 0.6 * 120);
 
+    depthTestEnabled ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+    faceCullingEnabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+
     glm::mat4 model = glm::mat4(1.0f);
     if (јелПречага) {
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, -1.7f));
@@ -284,6 +290,9 @@ void drawCuboid(Shader unifiedShader, unsigned int VAOcuboid, bool јелПре�
 void drawRoundObjects(Shader unifiedShader, unsigned int VAOround, int verts, bool isSphere) {
     unifiedShader.setBool("uUseTexture", false);
     glm::mat4 model = glm::mat4(1.0f);
+
+    depthTestEnabled ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+    faceCullingEnabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
 
     if (isSphere && dropActive) {
         glEnable(GL_BLEND);
@@ -322,6 +331,9 @@ void drawModel(Shader unifiedShader, Model realModel, bool isAC) {
     unifiedShader.setBool("uUseTexture", true);
     glm::mat4 model = glm::mat4(1.0f);
 
+    depthTestEnabled ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+    faceCullingEnabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+
     if (isAC) {
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.0f));
         model = glm::scale(model, glm::vec3(0.03f));
@@ -335,11 +347,54 @@ void drawModel(Shader unifiedShader, Model realModel, bool isAC) {
 
     unifiedShader.setMat4("uM", model);
     unifiedShader.setVec3("uMaterial.kA", 0.2f, 0.2f, 0.2f);
-    unifiedShader.setVec3("uMaterial.kS", 0.5f, 0.5f, 0.5f);
     unifiedShader.setFloat("uMaterial.shine", 32.0f);
-    glEnable(GL_DEPTH_TEST);
     realModel.Draw(unifiedShader);
-    glEnable(GL_DEPTH_TEST);
+}
+
+void drawWECEŠKOLJKA(Shader unifiedShader, Model realModel) {
+    unifiedShader.setBool("uUseTexture", true);
+    glm::mat4 model = glm::mat4(1.0f);
+
+    depthTestEnabled ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+    faceCullingEnabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+
+    model = glm::translate(model, glm::vec3(0.0f, -1.0f, -2.5f));
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.03f));
+
+    unifiedShader.setMat4("uM", model);
+    unifiedShader.setVec3("uMaterial.kA", 0.2f, 0.2f, 0.2f);
+    unifiedShader.setFloat("uMaterial.shine", 32.0f);
+    realModel.Draw(unifiedShader);
+}
+
+void drawFollowingModel(Shader unifiedShader, Model realModel) {
+    unifiedShader.setBool("uUseTexture", true);
+
+    depthTestEnabled ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+    faceCullingEnabled ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+
+    glm::mat4 model = glm::mat4(1.0f);
+
+    model = glm::translate(model, cameraPos);
+
+    model = glm::rotate(model, glm::radians(-yaw - 90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    model = glm::translate(model, glm::vec3(0.3f, -0.325f, -0.8f));
+
+    model = glm::rotate(model, glm::radians(10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(-25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(10.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    model = glm::scale(model, glm::vec3(0.04f));
+
+    unifiedShader.setMat4("uM", model);
+    unifiedShader.setVec3("uMaterial.kA", 0.2f, 0.2f, 0.2f);
+    unifiedShader.setFloat("uMaterial.shine", 32.0f);
+
+    realModel.Draw(unifiedShader);
 }
 
 void drawCrosshair(Shader unifiedShader, unsigned int VAOcrosshair) {
@@ -357,6 +412,26 @@ void drawCrosshair(Shader unifiedShader, unsigned int VAOcrosshair) {
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glEnable(GL_DEPTH_TEST);
+}
+
+void settings(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+    {
+        depthTestEnabled = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+    {
+        depthTestEnabled = false;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+    {
+        faceCullingEnabled = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+    {
+        faceCullingEnabled = false;
+    }
 }
 
 int main(void) {
@@ -383,6 +458,8 @@ int main(void) {
 
     Model ac("Resources/ac.obj");
     Model spinner("Resources/spinner.obj");
+    Model remote("Resources/remote.obj");
+    Model toilet("Resources/toilet.obj");
 
     std::map<std::string, float*> verticies = getVerticesMap();
     std::map<std::string, size_t> sizes = getVerticesSizes();
@@ -400,7 +477,7 @@ int main(void) {
     Shader unifiedShader("Shaders/basic.vert", "Shaders/basic.frag");
     unifiedShader.use();
     unifiedShader.setVec3("uLightPos", 20.0, 2.0, 20.0);
-    unifiedShader.setVec3("uLightColor", 1.2, 1.2, 1);
+    unifiedShader.setVec3("uLightColor", 1, 1, 1);
 
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = glfwGetTime();
@@ -415,18 +492,26 @@ int main(void) {
         unifiedShader.use();
         glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        glEnable(GL_DEPTH_TEST);
+        settings(window);
         unifiedShader.setMat4("uP", projection);
         unifiedShader.setMat4("uV", view);
         unifiedShader.setVec3("uViewPos", cameraPos);
 
         drawCuboid(unifiedShader, VAOcuboid, false, isOn ? 0.6f : 0.25f, isOn ? 0.04f : 0.0f, isOn ? 0.04 : 0.0f);
         drawCuboid(unifiedShader, VAOпречага, true, 1.0f, 1.0f, 1.0f);
-        drawRoundObjects(unifiedShader, VAOcylinder, vertsCylinder, false);
-        drawRoundObjects(unifiedShader, VAOsphere, vertsSphere, true);
         drawModel(unifiedShader, ac, true);
         drawModel(unifiedShader, spinner, false);
+        drawWECEŠKOLJKA(unifiedShader, toilet);
+
+        if (!isBasinPickedUp) {
+            drawFollowingModel(unifiedShader, remote);
+        }
+
+        drawRoundObjects(unifiedShader, VAOcylinder, vertsCylinder, false);
+        drawRoundObjects(unifiedShader, VAOsphere, vertsSphere, true);
+
         drawCrosshair(unifiedShader, VAOcrosshair);
+
         RenderText(textShader, "Marko Cvijanovic - SV75/2022", 10.0f, screenHeight - 50.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.7f, screenWidth, screenHeight);
 
         glfwSwapBuffers(window);

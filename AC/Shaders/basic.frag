@@ -38,7 +38,7 @@ void main()
     vec3 result;
     if(uUseTexture) {
         vec3 texColor = texture(uDiffMap1, chUV).rgb;
-        result = (ambient + (diff * texColor) + specular);
+        result = (ambient + diffuse) * texColor + specular;
     } else {
         result = ambient + diffuse + specular;
     }

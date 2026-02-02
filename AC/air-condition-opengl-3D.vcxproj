@@ -128,7 +128,9 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Resources\ac.mtl" />
+    <None Include="Resources\remote.mtl" />
     <None Include="Resources\spinner.mtl" />
+    <None Include="Resources\toilet.mtl" />
     <None Include="Shaders\basic.frag" />
     <None Include="Shaders\basic.vert" />
     <None Include="Shaders\text.frag" />
@@ -144,6 +146,8 @@
     <Image Include="Resources\AirConditioner.jpg" />
     <Image Include="Resources\Filter_color.png" />
     <Image Include="Resources\Plastic_color.png" />
+    <Image Include="Resources\remote.jpg" />
+    <Image Include="Resources\toilet.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="Resources\arial.ttf" />
